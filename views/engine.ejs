@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0" />
+    <title>
+        <%= TITLE %>
+    </title>
+    <script type="module" src="/source/model-viewer.min.js"></script>
+</head>
+
+<body>
+    <model-viewer id="model-viewer" src="<%=DEFAULT_MODEL%>" ios-src="<%=IOS_MODEL%>"
+        skybox-image="/models/<%=SKYBOX%>" environment-image="/models/<%=SKYBOX%>" ar
+        ar-modes="scene-viewer webxr" camera-controls alt="<%=ALT%>" xr-environment>
+        <button slot="ar-button" id ="button">
+            <img src="/source/ar.png" />
+        </button>
+        <div id="error" class="hide"><img src="/source/loading.png" /></div>
+    </model-viewer>
+    <script>
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const fallback = urlParams.get('fallback')
+        if (fallback == null) {
+            if (
+                /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+                    navigator.userAgent
+                )
+            ) {
+                location.href =
+                    `intent://arvr.google.com/scene-viewer/1.2?file=<%=URL%>models/<%=DEFAULT_MODEL%>&mode=ar_preferred#Intent;scheme=https;package=com.google.ar.core;action=android.intent.action.VIEW;S.browser_fallback_url=${location.href + '?fallback'};end;`;
+            } else {
+                if (fallback == null) {
+                    link = location.href + '?fallback'
+                    location.href = link
+                }
+            }
+        }
+        else {
+            document
+                .querySelector("#model-viewer")
+                .addEventListener("ar-status", (event) => {
+                    if (event.detail.status === "failed") {
+                        const error = document.querySelector("#error");
+                        error.classList.remove("hide");
+                        error.addEventListener("transitionend", (event) => {
+                            error.classList.add("hide");
+                        });
+                    }
+                });
+
+        }
+    </script>
+    <style>
+        html,
+        body {
+            width: 100%;
+            height: 100vh;
+        }
+
+        body {
+            background-image: url("/source/loading.png");
+            background-size: cover;
+            text-align:center;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        #model-viewer {
+            width: 100%;
+            height: 100%;
+        }
+
+        #error {
+            background-color: #ffffffdd;
+            border-radius: 16px;
+            padding: 16px;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate3d(-50%, -50%, 0);
+            transition: opacity 0.3s;
+        }
+
+        #error.hide {
+            opacity: 0;
+            visibility: hidden;
+            transition: visibility 2s, opacity 1s 1s;
+        }
+        #button {
+            background-color: rgba(255, 255, 255, 0.052); 
+            padding: 1em; 
+            border-radius: 4px; 
+            border: none; 
+            position: absolute; 
+            top: 16px; 
+            right: 16px;
+        }
+    </style>
+</body>
+
+</html>
